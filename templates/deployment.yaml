@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}-app
+  name: {{ .Release.Name }}-deployment
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-app
+    spec:
+      containers:
+      - image: {{ .Values.image.repository | quote }}
+        name: {{ .Release.Name }}-app
+        command: [ "/usr/sbin/syslog-ng", "-F", "--no-caps" ] #no-caps for no capabilities
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        volumeMounts:
+        - mountPath: /etc/syslog-ng/syslog-ng.conf
+          name: syslog-config
+          subPath: syslog-ng.conf
+        - mountPath: /var/lib/syslog-ng/
+          name: syslog-persistent
+        - mountPath: /tmp
+          name: syslog-logs
+      volumes:
+      - name: syslog-persistent
+        emtpyDir: {}
+      - name: syslog-logs
+        emtpyDir: {}
+      - name: syslog-config
+        configMap:
+          name: {{ .Release.Name }}-config
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

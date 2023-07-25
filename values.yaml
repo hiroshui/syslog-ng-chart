@@ -1,0 +1,20 @@
+#values for syslog-ng
+##namespace where the syslog service and deployment should be created
+namespace: logging
+
+#specify the image
+image:
+  repository: "docker.io/balabit/syslog-ng:4.3.0"
+# if you use a private registry, you can speficy here the pullsecret(s)
+imagePullSecrets:
+  - name: private-pull-secret
+
+#define how the syslog-service should be exposed (only tested internally with ClusterIP so far)
+service:
+  type: ClusterIP
+  port: 6515
+  protocol: TCP
+
+#where to store the syslog logs (locally)
+destination:
+  file: "/tmp/messages${HOST}"

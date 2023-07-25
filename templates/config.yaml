@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Values.namespace }}
+data:
+  syslog-ng.conf: |+
+    @version: 4.2
+
+    source s_net {
+       {{ lower (.Values.service.protocol) }}(
+         ip("0.0.0.0")
+         port({{ .Values.service.port }})
+       );
+     };
+
+     destination d_file {
+       file({{ .Values.destination.file | quote }});
+     };
+
+    log {
+      source(s_net); 
+      destination(d_file);
+    };
